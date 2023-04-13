@@ -311,17 +311,19 @@ def create_nerf(args):
     )
 
     # Create optimizer
-    # if args.i_embed == 1:
-    #     optimizer = RAdam(
-    #         [
-    #             {"params": grad_vars, "weight_decay": 1e-6},
-    #             {"params": embedding_params, "eps": 1e-15},
-    #         ],
-    #         lr=args.lrate,
-    #         betas=(0.9, 0.99),
-    #     )
-    # else:
-    optimizer = torch.optim.Adam(params=grad_vars, lr=args.lrate, betas=(0.9, 0.999))
+    if args.i_embed == 1:
+        optimizer = RAdam(
+            [
+                {"params": grad_vars, "weight_decay": 1e-6},
+                {"params": embedding_params, "eps": 1e-15},
+            ],
+            lr=args.lrate,
+            betas=(0.9, 0.99),
+        )
+    else:
+        optimizer = torch.optim.Adam(
+            params=grad_vars, lr=args.lrate, betas=(0.9, 0.999)
+        )
 
     start = 0
     basedir = args.basedir
@@ -819,10 +821,10 @@ def config_parser():
         "--i_img", type=int, default=500, help="frequency of tensorboard image logging"
     )
     parser.add_argument(
-        "--i_weights", type=int, default=500, help="frequency of weight ckpt saving"
+        "--i_weights", type=int, default=1000, help="frequency of weight ckpt saving"
     )
     parser.add_argument(
-        "--i_testset", type=int, default=1000, help="frequency of testset saving"
+        "--i_testset", type=int, default=5000, help="frequency of testset saving"
     )
     parser.add_argument(
         "--i_video",
