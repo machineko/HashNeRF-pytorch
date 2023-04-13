@@ -289,16 +289,16 @@ def create_nerf(args):
                 input_ch=input_ch,
                 input_ch_views=input_ch_views,
             ).to(device)
-        else:
-            model_fine = NeRF(
-                D=args.netdepth_fine,
-                W=args.netwidth_fine,
-                input_ch=input_ch,
-                output_ch=output_ch,
-                skips=skips,
-                input_ch_views=input_ch_views,
-                use_viewdirs=args.use_viewdirs,
-            ).to(device)
+        # else:
+        #     model_fine = NeRF(
+        #         D=args.netdepth_fine,
+        #         W=args.netwidth_fine,
+        #         input_ch=input_ch,
+        #         output_ch=output_ch,
+        #         skips=skips,
+        #         input_ch_views=input_ch_views,
+        #         use_viewdirs=args.use_viewdirs,
+        #     ).to(device)
         grad_vars += list(model_fine.parameters())
 
     network_query_fn = lambda inputs, viewdirs, network_fn: run_network(
@@ -311,19 +311,17 @@ def create_nerf(args):
     )
 
     # Create optimizer
-    if args.i_embed == 1:
-        optimizer = RAdam(
-            [
-                {"params": grad_vars, "weight_decay": 1e-6},
-                {"params": embedding_params, "eps": 1e-15},
-            ],
-            lr=args.lrate,
-            betas=(0.9, 0.99),
-        )
-    else:
-        optimizer = torch.optim.Adam(
-            params=grad_vars, lr=args.lrate, betas=(0.9, 0.999)
-        )
+    # if args.i_embed == 1:
+    #     optimizer = RAdam(
+    #         [
+    #             {"params": grad_vars, "weight_decay": 1e-6},
+    #             {"params": embedding_params, "eps": 1e-15},
+    #         ],
+    #         lr=args.lrate,
+    #         betas=(0.9, 0.99),
+    #     )
+    # else:
+    optimizer = torch.optim.Adam(params=grad_vars, lr=args.lrate, betas=(0.9, 0.999))
 
     start = 0
     basedir = args.basedir
@@ -411,13 +409,13 @@ def raw2outputs(raw, z_vals, rays_d, raw_noise_std=0, white_bkgd=False, pytest=F
     rgb = torch.sigmoid(raw[..., :3])  # [N_rays, N_samples, 3]
     noise = 0.0
     if raw_noise_std > 0.0:
-        noise = torch.randn(raw[..., 3].shape) * raw_noise_std
+        noise = torch.randn(raw[..., 3].shape, device=device) * raw_noise_std
 
         # Overwrite randomly sampled data if pytest
         if pytest:
             np.random.seed(0)
             noise = np.random.rand(*list(raw[..., 3].shape)) * raw_noise_std
-            noise = torch.Tensor(noise)
+            noise = torch.tensor(noise, device=device)
 
     # sigma_loss = sigma_sparsity_loss(raw[...,3])
     alpha = raw2alpha(raw[..., 3] + noise, dists)  # [N_rays, N_samples]
@@ -639,13 +637,13 @@ def config_parser():
     parser.add_argument(
         "--chunk",
         type=int,
-        default=1024 * 32,
+        default=1024 * 16,
         help="number of rays processed in parallel, decrease if running out of memory",
     )
     parser.add_argument(
         "--netchunk",
         type=int,
-        default=1024 * 64,
+        default=1024 * 32,
         help="number of pts sent through network in parallel, decrease if running out of memory",
     )
     parser.add_argument(
@@ -709,7 +707,7 @@ def config_parser():
     parser.add_argument(
         "--raw_noise_std",
         type=float,
-        default=0.0,
+        default=1.0,
         help="std dev of noise added to regularize sigma_a output, 1e0 recommended",
     )
 
@@ -821,7 +819,7 @@ def config_parser():
         "--i_img", type=int, default=500, help="frequency of tensorboard image logging"
     )
     parser.add_argument(
-        "--i_weights", type=int, default=1000, help="frequency of weight ckpt saving"
+        "--i_weights", type=int, default=500, help="frequency of weight ckpt saving"
     )
     parser.add_argument(
         "--i_testset", type=int, default=1000, help="frequency of testset saving"
