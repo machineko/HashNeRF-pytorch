@@ -152,7 +152,7 @@ pyproject_hooks==1.0.0
 PyQt3D
 PyQt5
 PyQt5-sip
-PyQtChart=
+PyQtChart
 PyQtDataVisualization
 PyQtNetworkAuth
 PyQtPurchasing
