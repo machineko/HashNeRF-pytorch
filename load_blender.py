@@ -65,7 +65,12 @@ def load_blender_data(basedir, half_res=False, testskip=1):
 
         for frame in meta["frames"][::skip]:
             fname = os.path.join(basedir, frame["file_path"])
-            imgs.append(cv2.cvtColor(imageio.imread(fname), cv2.COLOR_RGB2RGBA))
+            img = cv2.resize(
+                cv2.cvtColor(imageio.imread(fname), cv2.COLOR_RGB2RGBA),
+                (800, 800),
+                interpolation=cv2.INTER_AREA,
+            )
+            imgs.append(img)
             poses.append(np.array(frame["transform_matrix"]))
         imgs = (np.array(imgs) / 255.0).astype(np.float32)  # keep all 4 channels (RGBA)
         poses = np.array(poses).astype(np.float32)
