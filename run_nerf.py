@@ -599,7 +599,7 @@ def config_parser():
     parser = configargparse.ArgumentParser()
     parser.add_argument(
         "--config",
-        default="configs/500.txt",
+        default="configs/crab.txt",
         is_config_file=True,
         help="config file path",
     )
