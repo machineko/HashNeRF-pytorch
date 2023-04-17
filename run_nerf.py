@@ -599,7 +599,7 @@ def config_parser():
     parser = configargparse.ArgumentParser()
     parser.add_argument(
         "--config",
-        default="configs/lego.txt",
+        default="configs/500.txt",
         is_config_file=True,
         help="config file path",
     )
@@ -829,7 +829,7 @@ def config_parser():
     parser.add_argument(
         "--i_video",
         type=int,
-        default=50000,
+        default=1000,
         help="frequency of render_poses video saving",
     )
 
