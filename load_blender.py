@@ -65,11 +65,7 @@ def load_blender_data(basedir, half_res=False, testskip=1):
 
         for frame in meta["frames"][::skip]:
             fname = os.path.join(basedir, frame["file_path"])
-            img = cv2.resize(
-                cv2.cvtColor(imageio.imread(fname), cv2.COLOR_RGB2RGBA),
-                (800, 800),
-                interpolation=cv2.INTER_AREA,
-            )
+            img = cv2.cvtColor(imageio.imread(fname), cv2.COLOR_RGB2RGBA)
             imgs.append(img)
             poses.append(np.array(frame["transform_matrix"]))
         imgs = (np.array(imgs) / 255.0).astype(np.float32)  # keep all 4 channels (RGBA)
@@ -90,7 +86,7 @@ def load_blender_data(basedir, half_res=False, testskip=1):
     render_poses = torch.stack(
         [
             pose_spherical(angle, -30.0, 4.0)
-            for angle in np.linspace(-180, 180, 40 + 1)[:-1]
+            for angle in np.linspace(-60, 60, 40 + 1)[:-1]
         ],
         0,
     )

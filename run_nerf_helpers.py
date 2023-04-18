@@ -7,7 +7,7 @@ import numpy as np
 
 from hash_encoding import HashEmbedder, SHEncoder
 
-device = "mps"
+device = "cuda"
 
 # Misc
 img2mse = lambda x, y: torch.mean((x - y) ** 2)
@@ -80,7 +80,7 @@ def get_embedder(multires, args, i=0):
             bounding_box=args.bounding_box,
             log2_hashmap_size=args.log2_hashmap_size,
             finest_resolution=args.finest_res,
-        ).to(device="mps")
+        ).to(device="cuda")
         out_dim = embed.out_dim
     elif i == 2:
         embed = SHEncoder()
@@ -297,7 +297,7 @@ class NeRFSmall(nn.Module):
 # Ray helpers
 def get_rays(H, W, K, c2w):
     i, j = torch.meshgrid(
-        torch.linspace(0, W - 1, W).to("mps"), torch.linspace(0, H - 1, H).to("mps")
+        torch.linspace(0, W - 1, W).to("cuda"), torch.linspace(0, H - 1, H).to("cuda")
     )
     i = i.t()
     j = j.t()

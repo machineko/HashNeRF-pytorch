@@ -7,7 +7,7 @@ import pdb
 
 from utils import hash
 
-device = "mps"
+device = "cuda"
 
 
 def total_variation_loss(

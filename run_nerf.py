@@ -29,7 +29,7 @@ from load_scannet import load_scannet_data
 from load_LINEMOD import load_LINEMOD_data
 
 
-device = "mps"
+device = "cuda"
 np.random.seed(0)
 DEBUG = False
 
@@ -205,7 +205,9 @@ def render_path(
             p = -10.0 * np.log10(np.mean(np.square(rgb.cpu().numpy() - gt_img)))
             print(p)
             psnrs.append(p)
-
+        savedir = f"logs/{i}"
+        from pathlib import Path
+        Path(savedir).mkdir(parents=True, exist_ok=True)
         if savedir is not None:
             # save rgb and depth as a figure
             fig = plt.figure(figsize=(25, 15))
@@ -445,10 +447,11 @@ def raw2outputs(raw, z_vals, rays_d, raw_noise_std=0, white_bkgd=False, pytest=F
     try:
         entropy = Categorical(
             probs=torch.cat(
-                [weights, 1.0 - weights.sum(-1, keepdim=True) + 1e-6], dim=-1
+                [weights, 1.0 - weights.sum(-1, keepdim=True) + 1e-5], dim=-1
             )
         ).entropy()
-    except:
+    except Exception as e:
+        print(e)
         pdb.set_trace()
     sparsity_loss = entropy
 
@@ -639,13 +642,13 @@ def config_parser():
     parser.add_argument(
         "--chunk",
         type=int,
-        default=1024 * 16,
+        default=1024 * 32,
         help="number of rays processed in parallel, decrease if running out of memory",
     )
     parser.add_argument(
         "--netchunk",
         type=int,
-        default=1024 * 32,
+        default=1024 * 64,
         help="number of pts sent through network in parallel, decrease if running out of memory",
     )
     parser.add_argument(
@@ -748,7 +751,7 @@ def config_parser():
     parser.add_argument(
         "--dataset_type",
         type=str,
-        default="llff",
+        default="blender",
         help="options: llff / blender / deepvoxels",
     )
     parser.add_argument(
@@ -824,12 +827,12 @@ def config_parser():
         "--i_weights", type=int, default=1000, help="frequency of weight ckpt saving"
     )
     parser.add_argument(
-        "--i_testset", type=int, default=5000, help="frequency of testset saving"
+        "--i_testset", type=int, default=500, help="frequency of testset saving"
     )
     parser.add_argument(
         "--i_video",
         type=int,
-        default=1000,
+        default=500,
         help="frequency of render_poses video saving",
     )
 
